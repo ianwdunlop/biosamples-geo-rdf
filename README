@@ -3,3 +3,5 @@ Uses the EBI RDF API to find biosamples and plot them on a map.
 See http://www.ebi.ac.uk/rdf/services/biosamples
 
 Licence: MIT, see licence.txt
+
+WARNING: This code is not even alpha, I don't even know if it works correctly. Lots of testing and development still needed. Use at your own risk

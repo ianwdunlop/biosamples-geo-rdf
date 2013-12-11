@@ -15,6 +15,7 @@
 <body>
 	<div id="map_canvas" style="height:750px;"></div>
 	<script type="text/javascript">
+	var markers = [];
 
 	drawMap();
 
@@ -28,6 +29,7 @@
 	map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
 
 	google.maps.event.addListener(map, 'idle', function() {
+		setAllMap(null);
 	    var bounds = map.getBounds();
 		var ne = bounds.getNorthEast();
 		var sw = bounds.getSouthWest();
@@ -79,6 +81,7 @@
 						 					      map: map, 
 						 					      title:uri
 						 					  });
+						markers.push(marker);
 						// 					google.maps.event.addListener(marker, 'click', function() {
 						// 					  //do something?? Maybe go to URI?
 						//                  )};
@@ -91,6 +94,12 @@
 					        alert(XMLHttpRequest.responseText);
 				});
 	  });
+	}
+	// Sets the map on all markers in the array.
+	function setAllMap(map) {
+	  for (var i = 0; i < markers.length; i++) {
+	    markers[i].setMap(map);
+	  }
 	}
 	</script>
 
