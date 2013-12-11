@@ -1,0 +1,5 @@
+Uses the EBI RDF API to find biosamples and plot them on a map.
+
+See http://www.ebi.ac.uk/rdf/services/biosamples
+
+Licence: MIT, see licence.txt
