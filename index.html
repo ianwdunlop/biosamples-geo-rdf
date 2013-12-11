@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>EBI RDF Biosamples</title>
+	<meta name="generator" content="TextMate http://macromates.com/">
+	<meta name="author" content="Ian Dunlop">
+	<!-- Date: 2013-12-11 -->
+	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+	<script type="text/javascript" src="js/jquery.js"></script>
+	
+</head>
+<body>
+	<div id="map_canvas" style="height:750px;"></div>
+	<script type="text/javascript">
+
+	drawMap();
+
+	function drawMap(){
+	var latlng = new google.maps.LatLng(53.4, -2.9);
+	var myOptions = {
+	  zoom: 16,
+	  center: latlng,
+	  mapTypeId: google.maps.MapTypeId.ROADMAP
+	};
+	map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+
+	google.maps.event.addListener(map, 'idle', function() {
+	    var bounds = map.getBounds();
+		var ne = bounds.getNorthEast();
+		var sw = bounds.getSouthWest();
+		current_ne_lat = ne.lat();
+		current_ne_lon = ne.lng();
+		current_sw_lat = sw.lat();
+		current_sw_lon = sw.lng();
+		var query = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n'
+		query = query + ' PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n';
+		query = query + ' PREFIX owl: <http://www.w3.org/2002/07/owl#>\n';
+		query = query + ' PREFIX dc: <http://purl.org/dc/elements/1.1/>\n';
+		query = query + ' PREFIX dcterms: <http://purl.org/dc/terms/>\n';
+		query = query + ' PREFIX obo: <http://purl.obolibrary.org/obo/>\n';
+		query = query + ' PREFIX efo: <http://www.ebi.ac.uk/efo/>\n';
+		query = query + ' PREFIX biosd-terms: <http://rdf.ebi.ac.uk/terms/biosd/>\n';
+		query = query + ' PREFIX pav: <http://purl.org/pav/2.0/>\n';
+		query = query + ' PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n';
+		query = query + ' PREFIX sio: <http://semanticscience.org/resource/>\n';
+		query = query + ' SELECT DISTINCT ?item ?latVal ?longVal WHERE {\n';
+		query = query + ' ?item biosd-terms:has-bio-characteristic ?latPv, ?longPv.\n';
+		query = query + '  ?latPv\n';
+		query = query + '   a [ rdfs:label ?latLabel];\n';
+		query = query + '    sio:SIO_000300 ?latVal. # sio:has value\n';
+		query = query + '  FILTER ( REGEX ( ?latLabel, "latitude", "i" ) ).\n';
+		query = query + '  FILTER ( ?latVal < ' + current_ne_lat + ' ).\n';
+		query = query + ' FILTER ( ?latVal > ' + current_sw_lat + ' ).\n';
+		query = query + ' ?longPv \n';
+		query = query + '   a [ rdfs:label ?longLabel ]; \n';
+		query = query + '   sio:SIO_000300 ?longVal. # sio:has value \n';
+		query = query + ' FILTER ( REGEX ( ?longLabel, "longitude", "i" ) ). \n';
+		query = query + ' FILTER ( ?longVal < ' + current_ne_lon + ' ).\n FILTER ( ?longVal > ' + current_sw_lon + ')\n'; 
+		query = query + '}';
+
+		$.getJSON('http://www.ebi.ac.uk/rdf/services/biosamples/servlet/query',
+				  {
+				    query: query,
+				    format: "JSON"
+				  },
+				 function(data) {
+					$.each(data.results.bindings, function(index, item){
+						var lat = item.latVal.value;
+						var lon = item.longVal.value;
+						var uri = item.item.value;
+						console.log(lat + ' ' + lon + ' ' + uri);
+						var latLng = new google.maps.LatLng(lat,lon);
+						
+											var marker = new google.maps.Marker({
+						 					      position: latLng, 
+						 					      map: map, 
+						 					      title:uri
+						 					  });
+						// 					google.maps.event.addListener(marker, 'click', function() {
+						// 					  //do something?? Maybe go to URI?
+						//                  )};
+						});
+					//}
+					//};
+					//});
+				}).error(function(XMLHttpRequest,textStatus, errorThrown) {	alert(textStatus);
+					        alert(errorThrown);
+					        alert(XMLHttpRequest.responseText);
+				});
+	  });
+	}
+	</script>
+
+</body>
+</html>
